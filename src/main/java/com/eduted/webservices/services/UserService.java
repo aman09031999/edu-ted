@@ -3,6 +3,7 @@ package com.eduted.webservices.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,49 +13,38 @@ import com.eduted.webservices.repositories.UserRepository;
 @Service
 public class UserService
 {
-	UserRepository repo = new UserRepository();
-	
-	public User addNewUser(User user)
-	{
-		if(repo.getUsers().size() == 0)
-		{
-			repo.addUsers(user);
-			return repo.getUsers().get(repo.getUsers().size()-1);
-		}
-
-		for(User list : repo.getUsers())
-		{
-			if(list.getUserId().equals(user.getUserId()))
-				return new User();
-			else
-			{
-				repo.addUsers(user);
-				return repo.getUsers().get(repo.getUsers().size()-1);
-			}
-		}
+	@Autowired
+	private UserRepository repo = null;
 		
-		return new User();
+	public String addNewUser(User user)
+	{
+		if(repo.existsById(user.getUserId()))
+			return "user already exists...[FAILED]";
+		else
+		{
+			repo.save(user);
+			return "user with ID : "+user.getUserId()+", added successfully...[OK]";
+		}
 	}
 
-	public User findUserById(String id)
+	public String getUserById(String id)
 	{
-		for(User obj : repo.getUsers())
+		if(id != null)
 		{
-			if(obj.getUserId().equals(id))
-			{
-				return obj;
-			}
+			if(repo.existsById(id))
+				return repo.findById(id).toString();
 			else
-				return new User();
+				return "user with ID "+id+", doesn't exists";
 		}
 		
-		return new User();
+		return "ERROR";
+		
 	}
 	
 	public List<User> getAllUsers()
 	{
-		if(repo.getUsers() != null)
-			return repo.getUsers();
+		if(repo.findAll() != null)
+			return repo.findAll();
 		else
 			return new ArrayList<>();
 	}
